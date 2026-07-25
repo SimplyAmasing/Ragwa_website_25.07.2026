@@ -3,4 +3,6 @@ dist
 .env
 .env.local
 .figma
+!.figma/
+!.figma/make/
 !.figma/make/site.json
