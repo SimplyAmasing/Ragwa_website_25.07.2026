@@ -1,9 +1,13 @@
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import fs from 'node:fs'
 import path from 'node:path'
 
-import siteConfiguration from './.figma/make/site.json'
+const siteConfigPath = path.resolve(__dirname, './.figma/make/site.json')
+const siteConfiguration = fs.existsSync(siteConfigPath)
+  ? JSON.parse(fs.readFileSync(siteConfigPath, 'utf-8'))
+  : {}
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
