@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Heebo', sans-serif;
+  --color-blue-brand: #2563EB;
+  --color-blue-dark: #1D4ED8;
+  --color-gray-bg: #F8F9FB;
+  --color-gray-dark: #1F2937;
+  --radius-card: 12px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+  font-family: 'Heebo', sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: #1F2937;
+  font-family: 'Heebo', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbar while keeping functionality */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+a, button {
+  cursor: pointer;
+}
+
+input:focus, button:focus {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
