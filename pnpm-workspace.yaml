@@ -1,6 +1,7 @@
 packages:
   - '.'
 
-allowBuilds:
-  '@firebase/util': set this to true or false
-  protobufjs: set this to true or false
+# Dependency lifecycle scripts pnpm is allowed to run on install. Firebase and
+# its transitive protobufjs ship build scripts that the Vite bundle does not
+# need, so none are enabled.
+onlyBuiltDependencies: []

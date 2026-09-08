@@ -1,33 +1,47 @@
-import { fetchCategories, fetchProducts, type Category, type Product } from './catalog'
+import { useSyncExternalStore } from 'react'
+import { fetchCatalog, type CatalogCategory, type Product } from './catalog'
 import { SHOP_ID } from './firebase'
 
-let products: Product[] = []
-let categories: Category[] = []
+type Status = 'idle' | 'loading' | 'ready' | 'error'
+
+interface CatalogState {
+  status: Status
+  products: Product[]
+  categories: CatalogCategory[]
+}
+
+let state: CatalogState = { status: 'idle', products: [], categories: [] }
 const listeners = new Set<() => void>()
 
-function emit() {
+function set(next: CatalogState) {
+  state = next
   for (const listener of listeners) listener()
 }
 
-export const catalogStore = {
-  subscribe(listener: () => void) {
-    listeners.add(listener)
-    return () => listeners.delete(listener)
-  },
-  getProducts: () => products,
-  getCategories: () => categories,
+const subscribe = (listener: () => void) => {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
 }
 
-export async function loadCatalog() {
+const getSnapshot = () => state
+
+export function useCatalog(): CatalogState {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+
+export async function loadCatalog(): Promise<void> {
+  if (state.status === 'loading' || state.status === 'ready') return
   if (!SHOP_ID) {
-    console.warn('VITE_SHOP_ID is not set — catalog will stay empty until it is configured.')
+    console.warn('VITE_SHOP_ID is not set — the catalog will stay empty.')
+    set({ ...state, status: 'error' })
     return
   }
-  const [fetchedProducts, fetchedCategories] = await Promise.all([
-    fetchProducts(SHOP_ID),
-    fetchCategories(SHOP_ID),
-  ])
-  products = fetchedProducts
-  categories = fetchedCategories
-  emit()
+  set({ ...state, status: 'loading' })
+  try {
+    const { products, categories } = await fetchCatalog(SHOP_ID)
+    set({ status: 'ready', products, categories })
+  } catch (err) {
+    console.error('Failed to load catalog:', err)
+    set({ ...state, status: 'error' })
+  }
 }
