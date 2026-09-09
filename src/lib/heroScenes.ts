@@ -1,19 +1,13 @@
-import { pickI18n } from '../i18n'
+import { pickI18n, type Strings } from '../i18n'
 import type { Product } from './catalog'
 
 /**
- * The 12 photographed "podium in a themed room" backgrounds for the hero
- * PRODUCT slides (slides 2–6). One per catalog category, by the fixed mapping:
- *
- *   1 Dish & Kitchen Cleaning      7 Laundry & Fabric Care
- *   2 Cleaning & Cleaning Tools    8 Personal Care
- *   3 Cleaning Gloves              9 Paper & Paper Products
- *   4 Air Fresheners               10 Trash Bags
- *   5 Home / Household Essentials   11 Household Cleaners
- *   6 Disposable Products          12 Car Care
- *
- * These are the HERO's images only — the homepage Main Categories section keeps
- * its own separate card artwork.
+ * Scene mapping kept for reference — the product hero slides now use a fully
+ * composed background per product (see HERO_PRODUCTS below), the same technique
+ * as the approved Air Wick hero: the enhanced product is integrated into its
+ * category scene by the approved reference art, and only the information layer
+ * (logo, headline, support, three benefits, Shop-Now CTA) is real localised HTML
+ * on top. There are no prices anywhere on these slides.
  */
 
 const SCENE_BY_SLUG: Record<string, number> = {
@@ -60,87 +54,115 @@ export function heroSceneImage(scene: number): string {
   return `/hero/scenes/${String(scene).padStart(2, '0')}.png`
 }
 
-/**
- * Where the product stands on that scene's marble podium. Measured off each
- * background with a coordinate-grid overlay: `cx` is the VISIBLE CENTRE of the
- * marble podium (%, not the slide centre — every podium sits differently in its
- * artwork), `baseY` is the podium's top surface (% from the top) so the product
- * base rests on the stone. Scenes not listed use a sensible centre default.
- */
-export interface PodiumPlacement {
-  cx: number
-  baseY: number
+// ─────────────────────────────────────────────────────────────────────────────
+// Per-product hero definitions for the five product slides (slides 2–6).
+//
+// `bg` is the approved composed reference art with its baked marketing text
+// painted out — the enhanced product is already integrated on its podium there
+// (correct scale, contact shadow, props, lighting). The HTML info layer (brand
+// logo + product-specific localised headline + one support line + three benefit
+// circles + Shop-Now CTA) sits on the clean left area, positioned to match the
+// reference. Air Wick keeps its own approved layout and Ragwa-blue accent.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type HeroProductKey = keyof Strings['hero']['products']
+
+export type BenefitIcon =
+  | 'grease' | 'sparkle' | 'derma' // Palmolive
+  | 'flower' | 'drops' | 'washes' // Maxima
+  | 'shield' | 'mint' | 'daily' // Head & Shoulders
+  | 'crystal' | 'bolt' | 'swiss' // Durgol
+  | 'leaf' | 'home' | 'clock' // Air Wick
+  | 'plates' | 'shirt' | 'strand' | 'toilet' // extra reference icons
+
+export interface HeroAccent {
+  /** icon colour */ fg: string
+  /** CTA background + hover */ bg: string
 }
 
-const PLACEMENT: Record<number, PodiumPlacement> = {
-  1: { cx: 59, baseY: 74 }, // Palmolive — podium sits right of centre
-  4: { cx: 63, baseY: 73 }, // Air Wick — living-room podium, well right of centre
-  7: { cx: 51, baseY: 71 }, // Maxima — wide laundry-room podium
-  8: { cx: 49, baseY: 71 }, // Head & Shoulders — bathroom podium
-  11: { cx: 50, baseY: 71 }, // Durgol — utility-room podium
+export interface HeroProduct {
+  key: HeroProductKey
+  /** English-name fragment that identifies the catalog product. */
+  match: string
+  /** Authentic brand mark asset (extracted from the approved reference art),
+   *  or `null` to fall back to the brand name as text. */
+  logo: string | null
+  brand: string
+  /** Full composed background (approved reference art, baked text removed). */
+  bg: string
+  /** Rendered logo height, responsive Tailwind `h-*` classes, sized per brand
+   *  to visually match that hero's own reference (never one universal size). */
+  logoH: string
+  /** Headline size, responsive, sized per reference (Air Wick's is one big line;
+   *  the others are two lines). */
+  headlineSize: string
+  /** Air Wick's reference puts the CTA above the benefit row. */
+  ctaFirst?: boolean
+  /** Icon colour + CTA colour. Air Wick omits it → Ragwa blue. */
+  accent?: HeroAccent
+  benefitIcons: [BenefitIcon, BenefitIcon, BenefitIcon]
 }
 
-export function podiumPlacement(scene: number): PodiumPlacement {
-  return PLACEMENT[scene] ?? { cx: 50, baseY: 70 }
-}
-
-/**
- * Per-scene copy placement. Each background has its own negative space, so the
- * text corner and tone vary while the typographic system stays the same.
- * Scenes without an entry fall back to a white bottom band.
- */
-/** Physical corner (the scenes never mirror) where a scene's copy sits. */
-export type TextCorner = 'top-left' | 'bottom-left' | 'top-right' | 'bottom-right'
-export interface SceneText {
-  corner: TextCorner
-  tone: 'navy' | 'white'
-  maxW: string
-}
-
-const SCENE_TEXT: Record<number, SceneText> = {
-  1: { corner: 'top-left', tone: 'navy', maxW: '27rem' }, // podium right → copy top-left
-  4: { corner: 'bottom-left', tone: 'navy', maxW: '26rem' }, // Air Wick: open floor, lower-left
-  7: { corner: 'top-right', tone: 'navy', maxW: '27rem' }, // Maxima: podium centre-left → top-right
-  8: { corner: 'top-left', tone: 'navy', maxW: '26rem' }, // Head & Shoulders: soft window light upper-left
-  11: { corner: 'bottom-left', tone: 'navy', maxW: '27rem' }, // Durgol: clear lower-left tiling
-}
-
-export function sceneText(scene: number): SceneText {
-  return SCENE_TEXT[scene] ?? { corner: 'bottom-left', tone: 'white', maxW: '32rem' }
-}
-
-/**
- * Hand-made transparent cutouts of the five hero products, each isolated from
- * its real catalog pack-shot's white canvas by a border flood-fill (only the
- * background connected to the image edge is removed — printed white on the
- * packaging, caps, labels, Hebrew text, logos and shape are all preserved;
- * cutout scripts are kept out of the bundle). Every hero product slide uses one
- * of these — there is no masked-rectangle fallback any more. If a featured
- * product is swapped for one with no entry here, ProductSlide renders the copy
- * only and logs a warning rather than showing a raw pack-shot.
- *
- * For Air Wick the WHOLE retail blister pack is kept (card + device), not just
- * the internal refill.
- *
- * `heightPct` — product height as a % of the slide, tuned per packaging shape.
- */
-export interface ProductCutout {
-  src: string
-  heightPct: number
-}
-
-const CUTOUTS: { match: string; cutout: ProductCutout }[] = [
-  { match: 'palmolive classic', cutout: { src: '/hero/products/palmolive.png', heightPct: 63 } },
-  { match: 'maxima fabric softener', cutout: { src: '/hero/products/maxima.png', heightPct: 63 } },
-  { match: 'head & shoulders menthol', cutout: { src: '/hero/products/head-shoulders.png', heightPct: 63 } },
-  { match: 'durgol forte', cutout: { src: '/hero/products/durgol.png', heightPct: 62 } },
-  { match: 'air wick electric', cutout: { src: '/hero/products/air-wick.png', heightPct: 58 } },
+const HERO_PRODUCTS: HeroProduct[] = [
+  {
+    key: 'palmolive',
+    match: 'palmolive classic',
+    logo: '/hero/logos/palmolive.png',
+    brand: 'Palmolive',
+    bg: '/hero/products/palmolive-scene.png',
+    logoH: 'h-10 md:h-[2.9rem] lg:h-[3.7rem] xl:h-[4.4rem]',
+    headlineSize: 'text-[1.35rem] md:text-[1.5rem] lg:text-[1.7rem] xl:text-[1.9rem]',
+    accent: { fg: 'text-[#1f6b45]', bg: 'bg-[#1f6b45] hover:bg-[#184f34]' },
+    benefitIcons: ['grease', 'plates', 'derma'],
+  },
+  {
+    key: 'maxima',
+    match: 'maxima fabric softener',
+    logo: '/hero/logos/maxima.png',
+    brand: 'Maxima',
+    bg: '/hero/products/maxima-scene.png',
+    logoH: 'h-11 md:h-[3.4rem] lg:h-[4.3rem] xl:h-[5.2rem]',
+    headlineSize: 'text-[1.35rem] md:text-[1.5rem] lg:text-[1.7rem] xl:text-[1.9rem]',
+    accent: { fg: 'text-[#1554c8]', bg: 'bg-[#1554c8] hover:bg-[#0f429e]' },
+    benefitIcons: ['flower', 'drops', 'shirt'],
+  },
+  {
+    key: 'headShoulders',
+    match: 'head & shoulders menthol',
+    logo: '/hero/logos/head-shoulders.png',
+    brand: 'Head & Shoulders',
+    bg: '/hero/products/hs-scene.png',
+    logoH: 'h-10 md:h-[2.9rem] lg:h-[3.6rem] xl:h-[4.3rem]',
+    headlineSize: 'text-[1.3rem] md:text-[1.45rem] lg:text-[1.62rem] xl:text-[1.8rem]',
+    accent: { fg: 'text-[#1a63c4]', bg: 'bg-[#1a63c4] hover:bg-[#144e9c]' },
+    benefitIcons: ['shield', 'mint', 'strand'],
+  },
+  {
+    key: 'durgol',
+    match: 'durgol forte',
+    logo: '/hero/logos/durgol.png',
+    brand: 'durgol',
+    bg: '/hero/products/durgol-scene.png',
+    logoH: 'h-12 md:h-[3.8rem] lg:h-[4.9rem] xl:h-[6.1rem]',
+    headlineSize: 'text-[1.3rem] md:text-[1.5rem] lg:text-[1.7rem] xl:text-[1.95rem]',
+    accent: { fg: 'text-[#123a6b]', bg: 'bg-[#123a6b] hover:bg-[#0d2b50]' },
+    benefitIcons: ['shield', 'sparkle', 'toilet'],
+  },
+  {
+    key: 'airwick',
+    match: 'air wick electric',
+    logo: '/hero/logos/airwick.png',
+    brand: 'Air Wick',
+    bg: '/hero/products/air-wick-scene.png',
+    logoH: 'h-14 md:h-[3.7rem] lg:h-[4.7rem] xl:h-[5.6rem]',
+    headlineSize: 'text-[1.6rem] md:text-[1.8rem] lg:text-[2rem] xl:text-[2.3rem]',
+    ctaFirst: true,
+    benefitIcons: ['leaf', 'home', 'clock'],
+  },
 ]
 
-export function productCutout(nameEn: string): ProductCutout | null {
+/** The hero definition for a product, matched by English name fragment. */
+export function heroProduct(nameEn: string): HeroProduct | null {
   const n = nameEn.toLowerCase()
-  for (const { match, cutout } of CUTOUTS) {
-    if (n.includes(match)) return cutout
-  }
-  return null
+  return HERO_PRODUCTS.find(p => n.includes(p.match)) ?? null
 }

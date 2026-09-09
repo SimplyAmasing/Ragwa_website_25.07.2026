@@ -17,28 +17,20 @@ export function ProductRail({ title, subtitle, viewAllLabel, onViewAll, products
 
   if (products.length === 0) return null
 
-  // Same rule as the hero carousel: the button on the PHYSICAL LEFT goes to the
-  // PREVIOUS items, the one on the PHYSICAL RIGHT goes to the NEXT items — in
-  // Arabic, Hebrew and English alike. We step by picking a target card by its
-  // index in the list and asking the browser to bring it into view, so the
-  // physical scroll direction is resolved by the writing mode. No scrollLeft
-  // sign handling, so RTL cannot double-reverse it.
-  const page = (forward: boolean) => {
+  // Purely PHYSICAL movement, identical in Arabic, Hebrew and English:
+  //   RIGHT button ( > )  -> cards slide physically LEFT,  new cards from the RIGHT
+  //   LEFT  button ( < )  -> cards slide physically RIGHT, new cards from the LEFT
+  //
+  // A positive `scrollBy({ left })` delta increases `scrollLeft`, which pans the
+  // viewport toward the physical right in every writing mode current browsers
+  // ship (LTR, and the standardised negative-scrollLeft RTL model used by
+  // Chrome/Firefox/Safari). No `dir` check, no list-index math, no sign
+  // patching — there is nothing here for RTL to reverse.
+  const pan = (physicalRight: boolean) => {
     const el = scroller.current
     if (!el) return
-    const cards = Array.from(el.children) as HTMLElement[]
-    if (cards.length === 0) return
-    const view = el.getBoundingClientRect()
-    const cardW = cards[0].getBoundingClientRect().width || el.clientWidth
-    const perView = Math.max(1, Math.round(el.clientWidth / (cardW + 16)))
-    // lowest list index whose card is currently (partly) on screen
-    const firstVisible = cards.findIndex(c => {
-      const r = c.getBoundingClientRect()
-      return r.right > view.left + 4 && r.left < view.right - 4
-    })
-    const base = firstVisible < 0 ? 0 : firstVisible
-    const target = Math.min(cards.length - 1, Math.max(0, base + (forward ? perView : -perView)))
-    cards[target].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+    const step = Math.round(el.clientWidth * 0.9)
+    el.scrollBy({ left: physicalRight ? step : -step, behavior: 'smooth' })
   }
 
   return (
@@ -59,8 +51,8 @@ export function ProductRail({ title, subtitle, viewAllLabel, onViewAll, products
         </div>
 
         <div className="relative">
-          <RailArrow direction="left" label={t.hero.prev} onClick={() => page(false)} />
-          <RailArrow direction="right" label={t.hero.next} onClick={() => page(true)} />
+          <RailArrow direction="left" label={t.hero.prev} onClick={() => pan(false)} />
+          <RailArrow direction="right" label={t.hero.next} onClick={() => pan(true)} />
 
           <div
             ref={scroller}

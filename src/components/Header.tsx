@@ -114,9 +114,13 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-5">
         {/* Logo + store */}
         <button onClick={() => navigate({ name: 'home' })} className="flex shrink-0 items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-brand to-brand-dark text-sm font-black text-white shadow-lg shadow-brand/30">
-            {t.brand.slice(0, 2)}
-          </span>
+          <img
+            src="/brand/ragwa-logo.webp"
+            alt={t.brand}
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-full object-contain shadow-lg shadow-brand/30"
+          />
           <span className="hidden flex-col items-start leading-tight sm:flex">
             <span className="text-lg font-black text-slate-900">{t.brand}</span>
             <span className="flex items-center gap-1 text-[11px] text-slate-400">

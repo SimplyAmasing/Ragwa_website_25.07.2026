@@ -5,7 +5,7 @@ import { addMoney, formatMoney, multiplyMoney } from '../lib/money'
 import { placeOrder, type CheckoutContact } from '../lib/orders'
 import { useNav } from '../lib/router'
 import { deliveryFeeFor } from '../lib/shipping'
-import { CheckIcon, SpinnerIcon } from '../ui/icons'
+import { CheckIcon, SpinnerIcon, StorefrontIcon, TruckIcon } from '../ui/icons'
 import { Money, RippleButton } from '../ui/primitives'
 
 type Fulfillment = 'delivery' | 'pickup'
@@ -152,26 +152,59 @@ export function CheckoutPage() {
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <h3 className="mb-4 text-lg font-extrabold text-slate-900">{t.checkout.fulfilmentHeading}</h3>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {(['delivery', 'pickup'] as const).map(method => (
-                      <label
-                        key={method}
-                        className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition ${
-                          fulfillment === method ? 'border-brand bg-blue-50' : 'border-slate-200'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="fulfillment"
-                          checked={fulfillment === method}
-                          onChange={() => setFulfillment(method)}
-                          className="accent-brand"
-                        />
-                        <span className="text-sm font-bold text-slate-800">
-                          {method === 'delivery' ? t.checkout.delivery : t.checkout.pickup}
-                        </span>
-                      </label>
-                    ))}
+                    {([
+                      { method: 'delivery' as const, Icon: TruckIcon, title: t.checkout.delivery, desc: t.checkout.deliveryDesc },
+                      { method: 'pickup' as const, Icon: StorefrontIcon, title: t.checkout.pickup, desc: t.checkout.pickupDesc },
+                    ]).map(({ method, Icon, title, desc }) => {
+                      const selected = fulfillment === method
+                      return (
+                        <label
+                          key={method}
+                          className={`relative flex cursor-pointer gap-3 rounded-2xl border-2 p-4 transition ${
+                            selected
+                              ? 'border-brand bg-blue-50 shadow-sm'
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="fulfillment"
+                            checked={selected}
+                            onChange={() => setFulfillment(method)}
+                            className="sr-only"
+                          />
+                          <span
+                            className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${
+                              selected ? 'bg-brand text-white' : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            <Icon size={22} />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-slate-900">{title}</span>
+                            <span className="mt-0.5 block text-xs leading-snug text-slate-500">{desc}</span>
+                          </span>
+                          <span
+                            className={`absolute top-3 end-3 grid h-5 w-5 place-items-center rounded-full border-2 transition ${
+                              selected ? 'border-brand bg-brand text-white' : 'border-slate-300 bg-white text-transparent'
+                            }`}
+                          >
+                            <CheckIcon size={12} />
+                          </span>
+                        </label>
+                      )
+                    })}
                   </div>
+
+                  {fulfillment === 'pickup' && (
+                    <div className="mt-4 flex items-start gap-3 rounded-xl border border-brand/20 bg-blue-50/60 p-4">
+                      <StorefrontIcon size={20} className="mt-0.5 shrink-0 text-brand" />
+                      <div className="text-sm">
+                        <p className="font-bold text-slate-800">{t.checkout.pickupInfoTitle}</p>
+                        <p className="mt-0.5 font-semibold text-green-700">{t.checkout.pickupInfoLine}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {fulfillment === 'delivery' && (
                     <div className="mt-5 grid gap-4 sm:grid-cols-2">

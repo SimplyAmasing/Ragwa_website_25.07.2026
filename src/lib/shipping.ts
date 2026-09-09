@@ -1,12 +1,16 @@
 /**
- * Delivery-fee rule shown at checkout. Not authoritative: the order the site
- * writes carries this as an advisory `delivery_fee`, and the Worker onCreate
- * hook (contracts/customer_orders.yaml "Worker hooks", step 0b) re-copies the
- * shop's real `shops.delivery_fee` and folds it into `total` if/when it runs.
+ * Delivery-fee figure shown in the cart / checkout. Not authoritative: the order
+ * the site writes carries this as an advisory `delivery_fee`, and the
+ * chekchak-worker storefront order route re-derives the real charge from the
+ * shop's own `delivery_fee` before writing the order.
+ *
+ * A flat fee for every delivery order — there is no order-total threshold here,
+ * because no free-delivery rule is enforced on the backend and the storefront
+ * must not advertise one it cannot honour. Personal pickup carries no fee (that
+ * `0` is applied at the checkout fulfillment step, not here).
  */
-export const FREE_DELIVERY_THRESHOLD = 300
 export const STANDARD_DELIVERY_FEE = 29.9
 
-export function deliveryFeeFor(subtotal: number): number {
-  return subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : STANDARD_DELIVERY_FEE
+export function deliveryFeeFor(_subtotal: number): number {
+  return STANDARD_DELIVERY_FEE
 }

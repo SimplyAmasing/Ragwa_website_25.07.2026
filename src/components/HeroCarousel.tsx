@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pickI18n, useI18n, type Strings } from '../i18n'
 import type { Product } from '../lib/catalog'
-import {
-  heroSceneImage,
-  heroSceneNumber,
-  podiumPlacement,
-  productCutout,
-  sceneText,
-  type TextCorner,
-} from '../lib/heroScenes'
+import { heroProduct, type BenefitIcon, type HeroProduct, type HeroProductKey } from '../lib/heroScenes'
 import { useNav } from '../lib/router'
-import { Money } from '../ui/primitives'
 
 const AUTO_ROTATE_MS = 4500
 const SWIPE_THRESHOLD = 40
@@ -126,11 +118,8 @@ export function HeroCarousel({ products }: { products: Product[] }) {
                       active={active}
                       dir={dir}
                       reduceMotion={reduceMotion.current}
-                      featuredLabel={t.hero.featured}
-                      ctaLabel={t.hero.ctaShop}
-                      fallbackLine={t.hero.subtitle}
+                      strings={t.hero}
                       name={tr(slide.product.name)}
-                      categoryName={tr(slide.product.categoryName)}
                       onOpen={() => navigate({ name: 'product', id: slide.product.linkId })}
                     />
                   )}
@@ -209,15 +198,18 @@ function MarketingSlide({
       </div>
 
       {/* Copy — no transform ever. Fades only when this slide becomes active;
-          never reacts to the mouse. Physically pinned to the left (the image's
-          negative space); only the text alignment inside follows the language. */}
+          never reacts to the mouse. The information zone is pinned to a FIXED
+          physical position and width (`left-0 w-[50%]`, symmetric padding) that
+          never flips with the locale; the copy is centred inside it so different
+          sentence lengths / RTL vs LTR do not move the composition. `dir` only
+          affects text rendering. */}
       <div
         dir={dir}
-        className={`bg-[#eef5ff] px-6 py-7 text-start transition-opacity duration-500 md:absolute md:inset-y-0 md:left-0 md:flex md:w-[50%] md:flex-col md:justify-center md:bg-transparent md:py-0 md:pl-14 md:pr-12 lg:pl-20 lg:pr-14 ${
+        className={`bg-[#eef5ff] px-6 py-7 text-center transition-opacity duration-500 md:absolute md:inset-y-0 md:left-0 md:flex md:w-[50%] md:flex-col md:items-center md:justify-center md:bg-transparent md:px-12 md:py-0 lg:px-16 ${
           active ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <div className="w-full max-w-[20rem] sm:max-w-md lg:max-w-[32rem]">
+        <div className="mx-auto w-full max-w-[20rem] sm:max-w-md lg:max-w-[32rem]">
           <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
             <span className="h-1 w-1 rounded-full bg-brand" />
             {eyebrow}
@@ -246,148 +238,251 @@ function MarketingSlide({
   )
 }
 
-const CORNER_CLASS: Record<TextCorner, string> = {
-  'top-left': 'top-0 left-0',
-  'bottom-left': 'bottom-0 left-0',
-  'top-right': 'top-0 right-0',
-  'bottom-right': 'bottom-0 right-0',
+// Small single-stroke glyphs for the benefit circles. Decorative -> aria-hidden.
+function BenefitGlyph({ icon, size = 17 }: { icon: BenefitIcon; size?: number }) {
+  const p: Record<BenefitIcon, string> = {
+    grease: 'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11Z',
+    sparkle: 'M12 3v6m0 6v6m-9-9h6m6 0h6M6.5 6.5l3 3m5 5 3 3m0-11-3 3m-5 5-3 3',
+    derma: 'M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Zm-3 8 2 2 4-4',
+    flower: 'M12 8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0-5v3m0 12v3m9-9h-3M6 12H3m14.5-6.5-2 2m-9 9-2 2m13 0-2-2m-9-9-2-2',
+    drops: 'M9 3s4 5 4 8a4 4 0 0 1-8 0c0-3 4-8 4-8Zm7 6s3 4 3 6a3 3 0 0 1-6 0c0-2 3-6 3-6Z',
+    washes: 'M20 12a8 8 0 1 1-3-6.2M20 4v4h-4',
+    shield: 'M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Zm-3.5 8.5 2.5 2.5 4.5-4.5',
+    mint: 'M11 21C6 21 3 17 3 12c5 0 8 3 8 9Zm2 0c5 0 8-4 8-9-5 0-8 3-8 9Zm-1-9c0-4 3-7 7-8-1 4-3 6-7 8Z',
+    daily: 'M8 3v3m8-3v3M4 8h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm3.5 10 2 2 4-4',
+    crystal: 'M6 4h12l3 5-9 11L3 9l3-5Zm-3 5h18M9 4 7.5 9 12 20m0-16 1.5 5L12 20',
+    bolt: 'M13 2 4 14h7l-2 8 9-12h-7l2-8Z',
+    swiss: 'M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm6 3.5v9m-4.5-4.5h9',
+    leaf: 'M4 20c0-9 6-15 16-16 0 10-6 16-16 16Zm3-3C11 13 14 10 17 8',
+    home: 'M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9',
+    clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-14v5l3 2',
+    plates: 'M4 8c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Zm0 4c0 1.7 3.6 3 8 3s8-1.3 8-3m-16 4c0 1.7 3.6 3 8 3s8-1.3 8-3',
+    shirt: 'M8 4 4 7l2 3 2-1v10h8V9l2 1 2-3-4-3-2 2H10L8 4Zm7 6 .8 2M14 13l.6 1.6',
+    strand: 'M12 3c-2 4-4 6-4 10a4 4 0 0 0 8 0c0-4-2-6-4-10ZM6 8l-1.5-1M18 8l1.5-1M5 13H3m18 0h-2M7 18l-1.5 1M17 18l1.5 1',
+    toilet: 'M6 4h9a1 1 0 0 1 1 1v6a5 5 0 0 1-10 0V4Zm0 3H4m5 12v2m6-2v2M8 14l-1 5h10l-1-5',
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={p[icon]} />
+    </svg>
+  )
 }
+
+function CartGlyph() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 4h2l2.4 12.3a1 1 0 0 0 1 .7h8.7a1 1 0 0 0 1-.8L21 8H6M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+    </svg>
+  )
+}
+
+type SlideCopy = Strings['hero']['products'][HeroProductKey]
 
 function ProductSlide({
   product,
   active,
   dir,
   reduceMotion,
-  featuredLabel,
-  ctaLabel,
-  fallbackLine,
+  strings,
   name,
-  categoryName,
   onOpen,
 }: {
   product: Product
   active: boolean
   dir: Dir
   reduceMotion: boolean
-  featuredLabel: string
-  ctaLabel: string
-  fallbackLine: string
+  strings: Strings['hero']
   name: string
-  categoryName: string
   onOpen: () => void
 }) {
-  const discounted = product.isDiscounted && product.price > 0
   const settled = active || reduceMotion
   const motion = reduceMotion ? '' : 'transition-[opacity,transform] duration-500 ease-out'
-  const textEnter = settled ? 'translate-y-0' : 'translate-y-2'
+  const enter = settled ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
 
-  const scene = heroSceneNumber(product)
-  const place = podiumPlacement(scene)
-  const cutout = productCutout(pickI18n(product.name, 'en'))
-  const txt = sceneText(scene)
-  const top = txt.corner === 'top-left' || txt.corner === 'top-right'
-
-  if (!cutout && typeof console !== 'undefined') {
-    console.warn(
-      `[hero] no transparent cutout for "${pickI18n(product.name, 'en')}" — slide shows copy only. Add it to heroScenes.ts CUTOUTS.`,
+  const hp: HeroProduct | null = heroProduct(pickI18n(product.name, 'en'))
+  if (!hp) {
+    // Featured list is fixed to five known products; this is a safety net only.
+    return (
+      <div className="relative isolate bg-[#e7eef6]">
+        <div className="relative flex h-[260px] w-full items-center justify-center overflow-hidden sm:h-[320px] md:h-auto md:[aspect-ratio:2048/768]">
+          <div dir={dir} className="px-8 text-center">
+            <h2 className="text-2xl font-black text-navy">{name}</h2>
+            <button
+              type="button"
+              onClick={onOpen}
+              tabIndex={active ? 0 : -1}
+              className="mt-4 rounded-xl bg-brand px-7 py-3 text-sm font-extrabold text-white"
+            >
+              {strings.shopNow}
+            </button>
+          </div>
+        </div>
+      </div>
     )
   }
 
+  const copy = strings.products[hp.key]
+
   return (
     <div className="relative isolate bg-[#e7eef6]">
-      <div className="relative h-[260px] w-full overflow-hidden sm:h-[320px] md:h-auto md:[aspect-ratio:2048/768]">
+      <div className="relative h-[300px] w-full overflow-hidden sm:h-[360px] md:h-auto md:[aspect-ratio:2048/768]">
         <img
-          src={heroSceneImage(scene)}
+          src={hp.bg}
           alt=""
-          className="h-full w-full object-cover object-[50%_78%] md:object-center"
+          className="h-full w-full object-cover object-[70%_center] md:object-center"
         />
 
-        {/* The product on the marble podium — a real transparent cutout standing
-            on the stone, centred on the VISIBLE podium centre, base on the
-            surface, with a tight contact shadow. No masked rectangle fallback. */}
-        {cutout && (
-          <div
-            className="pointer-events-none absolute"
-            style={{
-              left: `${place.cx}%`,
-              bottom: `${100 - place.baseY}%`,
-              height: `clamp(150px, ${cutout.heightPct}%, 560px)`,
-              transform: 'translateX(-50%)',
-            }}
-          >
-            {/* tight contact shadow directly under the base */}
-            <div className="absolute inset-x-[8%] -bottom-[1.5%] h-[3%] min-h-[6px] rounded-[50%] bg-black/40 blur-[5px]" />
-            <div className="absolute inset-x-[-4%] -bottom-[1%] h-[2%] min-h-[4px] rounded-[50%] bg-black/20 blur-md" />
-            <img
-              src={cutout.src}
-              alt={name}
-              className={`relative h-full w-auto ${motion} ${
-                settled ? 'scale-100 opacity-100' : 'scale-[0.97] opacity-0'
-              }`}
-            />
-          </div>
-        )}
-
-        {/* Readability treatment — a soft gradient anchored to the text corner
-            only. Never a panel; most of the scene stays fully visible. */}
+        {/* Readability layer for the left info column — a soft-focus of the scene
+            there plus a blue-white gradient wash. Never an opaque card; both fade
+            out well before the product. */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[46%] md:block md:backdrop-blur-[3px] [mask-image:linear-gradient(to_right,#000_58%,transparent)] [-webkit-mask-image:linear-gradient(to_right,#000_58%,transparent)]" />
         <div
-          className={`pointer-events-none absolute h-[64%] w-[64%] ${CORNER_CLASS[txt.corner]}`}
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-[64%] md:block"
           style={{
-            background: `radial-gradient(ellipse at ${top ? 'top' : 'bottom'} ${
-              txt.corner.endsWith('left') ? 'left' : 'right'
-            }, ${
-              txt.tone === 'navy'
-                ? 'rgba(240,246,255,0.82) 0%, rgba(240,246,255,0.32) 46%, rgba(240,246,255,0) 78%'
-                : 'rgba(8,17,38,0.64) 0%, rgba(8,17,38,0.24) 46%, rgba(8,17,38,0) 80%'
-            })`,
+            background:
+              'linear-gradient(to right, rgba(243,248,255,0.96) 0%, rgba(243,248,255,0.93) 30%, rgba(243,248,255,0.76) 44%, rgba(243,248,255,0.38) 56%, rgba(243,248,255,0.08) 70%, rgba(243,248,255,0) 82%)',
           }}
         />
+      </div>
 
-        {/* Product info — placed in this scene's negative space. Fades + small
-            rise on enter, then completely still; never reacts to the mouse. */}
-        <div
-          dir={dir}
-          className={`absolute ${CORNER_CLASS[txt.corner]} flex max-w-full flex-col gap-2 px-6 py-6 text-start sm:px-10 md:px-14 md:py-10 ${motion} ${
-            settled ? 'opacity-100' : 'opacity-0'
-          } ${textEnter}`}
-          style={{ width: `min(92%, ${txt.maxW})` }}
-        >
-          {(() => {
-            const navy = txt.tone === 'navy'
-            const eyebrow = navy ? 'text-brand' : 'text-white/80'
-            const heading = navy ? 'text-navy' : 'text-white'
-            const strike = navy ? 'text-slate-400' : 'text-white/70'
-            const shadow = navy ? 'md:[text-shadow:0_1px_2px_rgba(255,255,255,0.85)]' : ''
-            return (
-              <>
-                <span className={`text-[11px] font-bold uppercase tracking-[0.16em] ${eyebrow}`}>
-                  {categoryName || featuredLabel || fallbackLine}
-                </span>
-                <h2 className={`text-balance text-xl font-black leading-tight sm:text-2xl md:text-[2rem] ${heading} ${shadow}`}>
-                  {name}
-                </h2>
-                <div className="flex flex-wrap items-center gap-3 pt-1">
-                  <Money value={product.effectivePrice} className={`text-2xl font-black sm:text-3xl ${heading}`} />
-                  {discounted && (
-                    <Money value={product.price} className={`text-sm line-through sm:text-base ${strike}`} />
-                  )}
-                  <button
-                    type="button"
-                    onClick={onOpen}
-                    tabIndex={active ? 0 : -1}
-                    className="rounded-xl bg-brand px-6 py-2.5 text-sm font-extrabold text-white shadow-md shadow-brand/30 transition-[background-color,box-shadow] duration-200 hover:bg-brand-dark hover:shadow-lg sm:text-base"
-                  >
-                    {ctaLabel}
-                  </button>
-                </div>
-              </>
-            )
-          })()}
-        </div>
+      {/* Info layer — real localised HTML, never baked into the artwork. Mobile:
+          a block below the scene. Desktop: a FIXED physical information zone
+          (`left-0`, fixed width, symmetric padding) that never flips with the
+          locale; the copy is centred inside it so RTL/LTR and different sentence
+          lengths keep the same physical position. `dir` only affects text
+          rendering. Biased toward the top to match the references. */}
+      <div
+        dir={dir}
+        className="bg-[#eef5ff] px-6 pb-24 pt-7 text-center md:absolute md:inset-y-0 md:left-0 md:flex md:w-[42%] md:flex-col md:items-center md:justify-center md:bg-transparent md:px-8 md:pb-0 md:pt-0 lg:px-12 xl:px-16"
+      >
+        <HeroInfo
+          hp={hp}
+          copy={copy}
+          shopNow={strings.shopNow}
+          onOpen={onOpen}
+          active={active}
+          motion={motion}
+          enter={enter}
+        />
       </div>
     </div>
   )
 }
+
+// One layout for all five product heroes, sized per-hero to match that hero's
+// own approved reference: brand logo, localised headline, one support line, a
+// strong horizontal row of three large benefit circles (white disc + brand
+// icon + short text), and a brand-accent Shop-Now pill. Air Wick puts the CTA
+// above the benefit row (`ctaFirst`) and uses the Ragwa-blue accent.
+function HeroInfo({
+  hp,
+  copy,
+  shopNow,
+  onOpen,
+  active,
+  motion,
+  enter,
+}: {
+  hp: HeroProduct
+  copy: SlideCopy
+  shopNow: string
+  onOpen: () => void
+  active: boolean
+  motion: string
+  enter: string
+}) {
+  const acc = hp.accent ?? { fg: 'text-brand', bg: 'bg-brand hover:bg-brand-dark' }
+
+  const benefits = (
+    <ul dir="ltr" className="flex items-start justify-center gap-2 md:gap-2.5 lg:gap-3.5">
+      {hp.benefitIcons.map((icon, i) => (
+        <li
+          key={i}
+          className="flex w-[4.4rem] flex-col items-center gap-1.5 text-center md:w-[5.2rem] md:gap-2 lg:w-[6rem] xl:w-[6.6rem]"
+        >
+          <span
+            className={`grid h-[3rem] w-[3rem] shrink-0 place-items-center rounded-full bg-white ${acc.fg} shadow-[0_9px_22px_-8px_rgba(11,43,107,0.3)] md:h-[3.5rem] md:w-[3.5rem] lg:h-[3.9rem] lg:w-[3.9rem] xl:h-[4.5rem] xl:w-[4.5rem]`}
+          >
+            <BenefitGlyph icon={icon} size={24} />
+          </span>
+          <span
+            className={`text-[0.66rem] font-bold leading-tight ${acc.fg} md:text-[0.71rem] lg:text-[0.77rem]`}
+          >
+            {copy.benefits[i]}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+
+  const cta = (
+    <button
+      type="button"
+      onClick={onOpen}
+      tabIndex={active ? 0 : -1}
+      className={`inline-flex items-center gap-2 self-center rounded-full px-5 py-2.5 text-sm font-extrabold text-white shadow-[0_14px_30px_-10px_rgba(11,43,107,0.42)] transition-colors duration-200 md:gap-2.5 md:px-7 md:py-3 md:text-[0.92rem] lg:px-9 lg:py-3.5 lg:text-[1.02rem] ${acc.bg}`}
+    >
+      <CartGlyph />
+      {shopNow}
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="rtl:-scale-x-100"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </svg>
+    </button>
+  )
+
+  return (
+    <div
+      className={`mx-auto flex w-full flex-col items-center ${motion} ${enter}`}
+      style={{ maxWidth: 'min(96%, 25rem)' }}
+    >
+      {hp.logo ? (
+        <img
+          src={hp.logo}
+          alt={hp.brand}
+          className={`w-auto max-w-[15rem] object-contain md:max-w-[18rem] ${hp.logoH}`}
+        />
+      ) : (
+        <div className="text-xl font-black tracking-tight text-navy md:text-2xl">{hp.brand}</div>
+      )}
+
+      <h2
+        className={`mt-3 text-balance font-black leading-[1.12] text-navy md:mt-4 md:leading-[1.1] md:[text-shadow:0_1px_2px_rgba(255,255,255,0.92)] lg:mt-5 ${hp.headlineSize}`}
+      >
+        {copy.headline}
+      </h2>
+      {copy.support && (
+        <p className="mt-1.5 text-[0.8rem] font-medium leading-snug text-slate-600 md:mt-1.5 md:text-[0.85rem] lg:text-[0.9rem]">
+          {copy.support}
+        </p>
+      )}
+
+      {hp.ctaFirst ? (
+        <>
+          <div className="mt-4 md:mt-5 lg:mt-6">{cta}</div>
+          <div className="mt-4 md:mt-6 lg:mt-6">{benefits}</div>
+        </>
+      ) : (
+        <>
+          <div className="mt-4 md:mt-6 lg:mt-6">{benefits}</div>
+          <div className="mt-4 md:mt-5 lg:mt-5">{cta}</div>
+        </>
+      )}
+    </div>
+  )
+}
+
+
+
 
 function HeroArrow({
   direction,
@@ -403,7 +498,7 @@ function HeroArrow({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`absolute top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-navy shadow-lg ring-1 ring-black/5 transition-colors hover:text-brand md:h-12 md:w-12 ${
+      className={`absolute top-[150px] z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-navy shadow-lg ring-1 ring-black/5 transition-colors hover:text-brand sm:top-[180px] md:top-1/2 md:h-12 md:w-12 ${
         direction === 'left' ? 'left-3 md:left-5' : 'right-3 md:right-5'
       }`}
     >

@@ -4766,7 +4766,7 @@ export const MOCK_CATALOG: WorkerCatalog = {
       "barcode": "",
       "weight_grams": null,
       "image_key": null,
-      "image_web": "/mock-images/198.jpg",
+      "image_web": "/products/198-head-shoulders-menthol-xxl.jpg",
       "image_mobile": null,
       "price": 27.9,
       "effective_price": 23.71,

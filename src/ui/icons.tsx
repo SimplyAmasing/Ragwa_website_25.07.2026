@@ -89,6 +89,29 @@ export const TruckIcon = ({ size = 18, className }: IconProps) => (
   </svg>
 )
 
+export const StorefrontIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M3 9 4.5 4h15L21 9M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+    <path d="M3 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 4 0 2.5 2.5 0 0 0 4 0 2.5 2.5 0 0 0 5 0" />
+    <path d="M9 20v-5h6v5" />
+  </svg>
+)
+
+export const BagIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M6 8h12l1 12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" />
+    <path d="M9 11V6a3 3 0 0 1 6 0v5" />
+  </svg>
+)
+
+export const WalletIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3" />
+    <path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3" />
+    <path d="M21 11h-4a2 2 0 0 0 0 4h4z" />
+  </svg>
+)
+
 export const ChevronDownIcon = ({ size = 16, className }: IconProps) => (
   <svg {...base(size, className)}>
     <path d="m6 9 6 6 6-6" />

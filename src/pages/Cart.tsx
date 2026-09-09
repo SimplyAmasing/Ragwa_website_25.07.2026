@@ -1,9 +1,9 @@
 import { useI18n } from '../i18n'
 import { useCart } from '../lib/cart'
-import { addMoney, formatMoney, multiplyMoney } from '../lib/money'
+import { addMoney, multiplyMoney } from '../lib/money'
 import { useNav } from '../lib/router'
-import { deliveryFeeFor, FREE_DELIVERY_THRESHOLD } from '../lib/shipping'
-import { MinusIcon, PlusIcon, TrashIcon, TruckIcon } from '../ui/icons'
+import { deliveryFeeFor } from '../lib/shipping'
+import { MinusIcon, PlusIcon, StorefrontIcon, TrashIcon } from '../ui/icons'
 import { Money, RippleButton } from '../ui/primitives'
 import { ProductImage } from '../components/ProductImage'
 
@@ -32,7 +32,6 @@ export function CartPage() {
 
   const delivery = deliveryFeeFor(subtotal)
   const total = addMoney(subtotal, delivery)
-  const remaining = FREE_DELIVERY_THRESHOLD - subtotal
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
@@ -96,17 +95,13 @@ export function CartPage() {
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>{t.cart.shipping}</span>
-                <span className={`font-bold ${delivery === 0 ? 'text-green-600' : ''}`}>
-                  {delivery === 0 ? t.cart.free : <Money value={delivery} />}
-                </span>
+                <Money value={delivery} className="font-bold" />
               </div>
+              <p className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                <StorefrontIcon size={13} className="shrink-0" />
+                {t.cart.pickupNote}
+              </p>
             </div>
-
-            {remaining > 0 && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] font-semibold text-amber-800">
-                <TruckIcon size={15} /> {t.cart.addMore(formatMoney(remaining))}
-              </div>
-            )}
 
             <div className="mt-5 flex items-baseline justify-between border-t-2 border-slate-100 pt-4">
               <span className="text-base font-extrabold text-slate-900">{t.cart.total}</span>
