@@ -18,6 +18,7 @@ export function CatalogPage({ route }: { route: Extract<Route, { name: 'catalog'
 
   const category = route.category
   const search = route.search ?? ''
+  const saleOnly = route.sale === true
 
   const priceCeiling = useMemo(
     () => Math.max(10, Math.ceil(products.reduce((m, p) => Math.max(m, p.effectivePrice), 0))),
@@ -28,6 +29,7 @@ export function CatalogPage({ route }: { route: Extract<Route, { name: 'catalog'
     const needle = search.trim().toLowerCase()
     const cap = maxPrice ?? priceCeiling
     const result = products.filter(p => {
+      if (saleOnly && !p.isDiscounted) return false
       if (category && p.categoryId !== category) return false
       if (p.effectivePrice > cap) return false
       if (needle) {
@@ -43,17 +45,17 @@ export function CatalogPage({ route }: { route: Extract<Route, { name: 'catalog'
       return 0
     })
     return result
-  }, [products, category, search, maxPrice, priceCeiling, sort, locale])
+  }, [products, category, search, saleOnly, maxPrice, priceCeiling, sort, locale])
 
   const setCategory = (id: string | undefined) => {
-    navigate({ name: 'catalog', category: id, search: search || undefined })
+    navigate({ name: 'catalog', category: id, search: search || undefined, sale: saleOnly || undefined })
   }
 
   return (
     <div className="min-h-[70vh] bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-7xl">
-        <h1 className="mb-1 text-3xl font-black text-slate-900">{t.nav.catalog}</h1>
-        <p className="mb-8 text-slate-500">{t.products.subheading}</p>
+        <h1 className="mb-1 text-3xl font-black text-slate-900">{saleOnly ? t.sections.saleTitle : t.nav.catalog}</h1>
+        <p className="mb-8 text-slate-500">{saleOnly ? t.sections.saleSub : t.products.subheading}</p>
 
         <div className="grid gap-7 lg:grid-cols-[260px_1fr]">
           {/* Filters */}
@@ -70,7 +72,7 @@ export function CatalogPage({ route }: { route: Extract<Route, { name: 'catalog'
                     type="search"
                     value={search}
                     onChange={e =>
-                      navigate({ name: 'catalog', category, search: e.target.value || undefined })
+                      navigate({ name: 'catalog', category, search: e.target.value || undefined, sale: saleOnly || undefined })
                     }
                     className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-4 pe-9 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
                   />

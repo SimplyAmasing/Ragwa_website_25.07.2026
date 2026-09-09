@@ -82,8 +82,8 @@ export function ProductPage({ linkId }: { linkId: string }) {
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-9">
           <div className="grid gap-10 md:grid-cols-2">
-            <div className="overflow-hidden rounded-2xl bg-slate-50">
-              <ProductImage urls={product.imageUrls} alt={name} className="aspect-square w-full object-cover" />
+            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+              <ProductImage urls={product.imageUrls} alt={name} className="aspect-square w-full object-contain p-6" />
             </div>
 
             <div className="flex flex-col gap-5">

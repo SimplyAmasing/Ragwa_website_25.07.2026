@@ -1,4 +1,5 @@
 import { placeWorkerOrder } from './api'
+import { IS_MOCK } from './catalog'
 import { SHOP_ID } from './firebase'
 
 export interface CheckoutContact {
@@ -35,8 +36,15 @@ export interface PlaceOrderInput {
  * line prices and delivery fee are advisory only.
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<string> {
-  if (!SHOP_ID) throw new Error('VITE_SHOP_ID is not configured')
   if (input.lines.length === 0) throw new Error('Cannot place an order with no items')
+
+  if (IS_MOCK) {
+    console.info('Ragwa mock: order not sent', input)
+    await new Promise(resolve => setTimeout(resolve, 600))
+    return `mock-${Date.now()}`
+  }
+
+  if (!SHOP_ID) throw new Error('VITE_SHOP_ID is not configured')
 
   const { orderId } = await placeWorkerOrder({
     shopId: SHOP_ID,

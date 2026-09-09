@@ -6,3 +6,7 @@ dist
 !.figma/
 !.figma/make/
 !.figma/make/site.json
+
+# Local UI-review only: full-resolution product photos used by the mock catalog.
+# Real catalog images are served from R2 via the Worker.
+public/mock-images/

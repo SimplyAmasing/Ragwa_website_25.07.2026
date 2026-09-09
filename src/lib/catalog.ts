@@ -1,6 +1,17 @@
 import { fetchWorkerCatalog, type WorkerProduct } from './api'
-import { R2_PUBLIC_URL } from './firebase'
+import { R2_PUBLIC_URL, WORKER_URL } from './firebase'
 import type { I18nValue } from '../i18n'
+
+/**
+ * Local UI-review mode: when the Worker URL is not configured and we are
+ * running `vite dev`, the catalog comes from a static fixture (real product
+ * names + photos, see mockCatalog.ts) instead of the network. Flips to live
+ * data automatically once VITE_WORKER_URL is set. `VITE_USE_MOCK=0` forces it
+ * off even in dev.
+ */
+const USE_MOCK =
+  import.meta.env.VITE_USE_MOCK === '1' ||
+  (import.meta.env.DEV && !WORKER_URL && import.meta.env.VITE_USE_MOCK !== '0')
 
 // Names/descriptions stay as raw i18n values and are resolved at render time
 // (the visitor can switch language after load), so components call
@@ -49,12 +60,15 @@ function resolveImages(p: WorkerProduct): string[] {
   const push = (u: string | null) => {
     if (u && !urls.includes(u)) urls.push(u)
   }
+  // A full URL (dashboard uploads) or a root-relative path (local mock assets).
+  const isDirectUrl = (u: string | null | undefined): boolean =>
+    !!u && (u.startsWith('http') || u.startsWith('/'))
 
-  if (p.image_web?.startsWith('http')) push(p.image_web)
-  if (p.image_mobile?.startsWith('http')) push(p.image_mobile)
-  if (p.image_key?.startsWith('http')) push(p.image_key)
+  if (isDirectUrl(p.image_web)) push(p.image_web)
+  if (isDirectUrl(p.image_mobile)) push(p.image_mobile)
+  if (isDirectUrl(p.image_key)) push(p.image_key)
 
-  if (p.image_key && !p.image_key.startsWith('http') && R2_PUBLIC_URL) {
+  if (p.image_key && !isDirectUrl(p.image_key) && R2_PUBLIC_URL) {
     const base = `${R2_PUBLIC_URL}/${p.image_key.replace(/^\/+/, '')}`
     push(`${base}/card.webp`)
     push(`${base}.webp`)
@@ -64,10 +78,19 @@ function resolveImages(p: WorkerProduct): string[] {
   return urls
 }
 
-export async function fetchCatalog(shopId: string): Promise<Catalog> {
-  if (!shopId) return { products: [], categories: [] }
+export const IS_MOCK = USE_MOCK
 
-  const data = await fetchWorkerCatalog(shopId)
+export async function fetchCatalog(shopId: string): Promise<Catalog> {
+  if (!shopId && !USE_MOCK) return { products: [], categories: [] }
+
+  let data
+  if (USE_MOCK) {
+    const { MOCK_CATALOG } = await import('./mockCatalog')
+    console.info('%cRagwa: showing MOCK catalog (VITE_WORKER_URL unset)', 'color:#2563eb;font-weight:bold')
+    data = MOCK_CATALOG
+  } else {
+    data = await fetchWorkerCatalog(shopId)
+  }
   const categoryNameById = new Map(data.categories.map(c => [c.id, c.name]))
 
   const products: Product[] = data.products.map(p => ({

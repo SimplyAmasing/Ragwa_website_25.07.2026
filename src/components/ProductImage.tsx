@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 interface ProductImageProps {
   urls: string[]
   alt: string
   className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -12,7 +13,7 @@ interface ProductImageProps {
  * or may not exist, so each candidate is tried in turn before falling back to a
  * generated placeholder.
  */
-export function ProductImage({ urls, alt, className }: ProductImageProps) {
+export function ProductImage({ urls, alt, className, style }: ProductImageProps) {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export function ProductImage({ urls, alt, className }: ProductImageProps) {
       alt={alt}
       loading="lazy"
       className={className}
+      style={style}
       onError={() => setIndex(i => i + 1)}
     />
   )

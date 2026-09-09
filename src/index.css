@@ -1,13 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 
 /* Heebo carries Hebrew + Latin; Cairo covers Arabic (Heebo has no Arabic
    glyphs, so the stack falls through to Cairo for those code points). */
 @theme {
   --font-sans: 'Heebo', 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --color-brand: #2563eb;
-  --color-brand-dark: #1d4ed8;
+  --color-brand: #1d6fe0;
+  --color-brand-dark: #1559b8;
+  --color-accent: #0878ff;
+  --color-navy: #0b2b6b;
   --color-ink: #0f172a;
+}
+
+/* Handwritten slogan overlay on the hero image. */
+.font-hand {
+  font-family: 'Caveat', 'Cairo', cursive;
+  font-weight: 700;
 }
 
 @keyframes fadeInUp {

@@ -46,8 +46,8 @@ export function CartPage() {
                 key={line.linkId}
                 className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4"
               >
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-                  <ProductImage urls={line.imageUrls} alt={tr(line.name)} className="h-full w-full object-cover" />
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <ProductImage urls={line.imageUrls} alt={tr(line.name)} className="h-full w-full object-contain p-1.5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 line-clamp-2 text-sm font-bold text-slate-800">{tr(line.name)}</div>

@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 
 export type Route =
   | { name: 'home' }
-  | { name: 'catalog'; category?: string; search?: string }
+  | { name: 'catalog'; category?: string; search?: string; sale?: boolean }
   | { name: 'product'; id: string }
   | { name: 'cart' }
   | { name: 'checkout' }
+  | { name: 'wishlist' }
 
 function parse(hash: string): Route {
   const path = hash.replace(/^#/, '') || '/'
@@ -20,6 +21,7 @@ function parse(hash: string): Route {
         name: 'catalog',
         category: params.get('c') ?? undefined,
         search: params.get('q') ?? undefined,
+        sale: params.get('s') === '1' || undefined,
       }
     case 'p':
       return segments[1] ? { name: 'product', id: decodeURIComponent(segments[1]) } : { name: 'home' }
@@ -27,6 +29,8 @@ function parse(hash: string): Route {
       return { name: 'cart' }
     case 'checkout':
       return { name: 'checkout' }
+    case 'wishlist':
+      return { name: 'wishlist' }
     default:
       return { name: 'home' }
   }
@@ -40,6 +44,7 @@ export function toHash(route: Route): string {
       const q = new URLSearchParams()
       if (route.category) q.set('c', route.category)
       if (route.search) q.set('q', route.search)
+      if (route.sale) q.set('s', '1')
       const qs = q.toString()
       return qs ? `#/catalog?${qs}` : '#/catalog'
     }
@@ -49,6 +54,8 @@ export function toHash(route: Route): string {
       return '#/cart'
     case 'checkout':
       return '#/checkout'
+    case 'wishlist':
+      return '#/wishlist'
   }
 }
 

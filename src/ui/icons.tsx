@@ -66,6 +66,20 @@ export const CheckIcon = ({ size = 16, className }: IconProps) => (
   </svg>
 )
 
+export const ShieldIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+)
+
+export const HeadsetIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M3 14v-3a9 9 0 0 1 18 0v3" />
+    <path d="M21 16a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2zM3 16a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2z" />
+  </svg>
+)
+
 export const TruckIcon = ({ size = 18, className }: IconProps) => (
   <svg {...base(size, className)}>
     <rect x="1" y="3" width="15" height="13" />
@@ -118,6 +132,26 @@ export const MapPinIcon = ({ size = 15, className }: IconProps) => (
 export const ArrowForwardIcon = ({ size = 16, className }: IconProps) => (
   <svg {...base(size, className)} className={`rtl:-scale-x-100 ${className ?? ''}`}>
     <path d="m9 18 6-6-6-6" />
+  </svg>
+)
+
+export const InstagramIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <rect x="2" y="2" width="20" height="20" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+)
+
+export const FacebookIcon = ({ size = 18, className }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+)
+
+export const WhatsappIcon = ({ size = 18, className }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2s-1.1.2-3.6-.9-3.9-3.7-4-3.9-.9-1.2-.9-2.3.6-1.6.8-1.8.4-.3.6-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5c-.2.2-.3.4-.1.7s.7 1.2 1.5 1.9c1 .9 1.8 1.2 2.1 1.3s.4.1.6-.1l.7-.8c.2-.2.3-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.6-.1 1z" />
   </svg>
 )
 
