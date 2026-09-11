@@ -56,33 +56,3 @@ export function pickFeatured(products: Product[]): Product[] {
 
   return picked.slice(0, FEATURED_COUNT)
 }
-
-/**
- * The "Featured Products" section — a wider hand-picked set. Spreads across
- * categories (one pass taking the first product of each category, then filling
- * from the rest) so the row is not all laundry. Excludes anything in `exclude`
- * (the on-sale rail) to avoid repeating cards.
- */
-export function pickFeaturedSection(products: Product[], exclude: Set<string>, count = 12): Product[] {
-  const available = products.filter(p => !exclude.has(p.linkId))
-  const picked: Product[] = []
-  const used = new Set<string>()
-  const seenCategory = new Set<string>()
-
-  for (const p of available) {
-    if (picked.length >= count) break
-    const key = p.categoryId ?? '—'
-    if (seenCategory.has(key)) continue
-    seenCategory.add(key)
-    picked.push(p)
-    used.add(p.linkId)
-  }
-  for (const p of available) {
-    if (picked.length >= count) break
-    if (!used.has(p.linkId)) {
-      picked.push(p)
-      used.add(p.linkId)
-    }
-  }
-  return picked.slice(0, count)
-}
