@@ -69,10 +69,19 @@ function resolveImages(p: WorkerProduct): string[] {
   if (isDirectUrl(p.image_key)) push(p.image_key)
 
   if (p.image_key && !isDirectUrl(p.image_key) && R2_PUBLIC_URL) {
-    const base = `${R2_PUBLIC_URL}/${p.image_key.replace(/^\/+/, '')}`
-    push(`${base}/card.webp`)
-    push(`${base}.webp`)
+    const key = p.image_key.replace(/^\/+/, '')
+    const base = `${R2_PUBLIC_URL}/${key}`
+    // Live data stores image_key as the full R2 object path, extension
+    // included (e.g. "items/abc123.webp") -- no per-size variant subfolder
+    // was ever generated, despite the contract's documented "key without
+    // extension, reader appends the variant" convention. Try the real shape
+    // first; the variant/no-extension forms stay as a fallback for the day a
+    // variant pipeline actually exists.
     push(base)
+    if (!/\.\w+$/.test(key)) {
+      push(`${base}/card.webp`)
+      push(`${base}.webp`)
+    }
   }
 
   return urls
