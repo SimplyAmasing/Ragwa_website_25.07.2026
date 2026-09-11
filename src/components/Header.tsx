@@ -4,6 +4,7 @@ import { useCart } from '../lib/cart'
 import { useNav } from '../lib/router'
 import { computeOpenStatus, storeAddress } from '../lib/storeInfo'
 import { useWishlist } from '../lib/wishlist'
+import { withBase } from '../lib/assetPath'
 import {
   CartIcon,
   FacebookIcon,
@@ -115,7 +116,7 @@ export function Header() {
         {/* Logo + store */}
         <button onClick={() => navigate({ name: 'home' })} className="flex shrink-0 items-center gap-3">
           <img
-            src="/brand/ragwa-logo.webp"
+            src={withBase('/brand/ragwa-logo.webp')}
             alt={t.brand}
             width={56}
             height={56}

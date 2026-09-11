@@ -1,5 +1,6 @@
 import { pickI18n, type Strings } from '../i18n'
 import type { Product } from './catalog'
+import { withBase } from './assetPath'
 
 /**
  * Scene mapping kept for reference — the product hero slides now use a fully
@@ -103,7 +104,7 @@ export interface HeroProduct {
   benefitIcons: [BenefitIcon, BenefitIcon, BenefitIcon]
 }
 
-const HERO_PRODUCTS: HeroProduct[] = [
+const HERO_PRODUCTS_RAW: HeroProduct[] = [
   {
     key: 'palmolive',
     match: 'palmolive classic',
@@ -160,6 +161,14 @@ const HERO_PRODUCTS: HeroProduct[] = [
     benefitIcons: ['leaf', 'home', 'clock'],
   },
 ]
+
+// logo/bg above are written as root-relative paths for readability; resolved
+// against Vite's base here so GitHub Pages' subpath deploy doesn't 404 them.
+const HERO_PRODUCTS: HeroProduct[] = HERO_PRODUCTS_RAW.map(p => ({
+  ...p,
+  logo: p.logo ? withBase(p.logo) : p.logo,
+  bg: p.bg ? withBase(p.bg) : p.bg,
+}))
 
 /** The hero definition for a product, matched by English name fragment. */
 export function heroProduct(nameEn: string): HeroProduct | null {

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { pickI18n, useI18n } from '../i18n'
 import type { CatalogCategory, Product } from '../lib/catalog'
 import { useNav } from '../lib/router'
+import { withBase } from '../lib/assetPath'
 
 /**
  * The 12 category artworks provided by the shop, one per category. Matched by
@@ -45,10 +46,10 @@ const IMAGE_BY_EN_KEYWORD: [test: (name: string) => boolean, src: string][] = [
 ]
 
 function categoryImage(cat: CatalogCategory): string | null {
-  if (IMAGE_BY_SLUG[cat.id]) return IMAGE_BY_SLUG[cat.id]
+  if (IMAGE_BY_SLUG[cat.id]) return withBase(IMAGE_BY_SLUG[cat.id])
   const en = pickI18n(cat.name, 'en').toLowerCase()
   for (const [test, src] of IMAGE_BY_EN_KEYWORD) {
-    if (test(en)) return src
+    if (test(en)) return withBase(src)
   }
   return null
 }

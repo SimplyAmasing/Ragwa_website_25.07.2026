@@ -3,6 +3,7 @@ import { pickI18n, useI18n, type Strings } from '../i18n'
 import type { Product } from '../lib/catalog'
 import { heroProduct, type BenefitIcon, type HeroProduct, type HeroProductKey } from '../lib/heroScenes'
 import { useNav } from '../lib/router'
+import { withBase } from '../lib/assetPath'
 
 const AUTO_ROTATE_MS = 4500
 const SWIPE_THRESHOLD = 40
@@ -13,7 +14,7 @@ const SWIPE_THRESHOLD = 40
  * on the right stays unobstructed. Text is localized HTML placed over the left
  * area — never baked into the image, never mirrored with the layout.
  */
-const HERO_MAIN_BG = '/hero/hero-main.png'
+const HERO_MAIN_BG = withBase('/hero/hero-main.png')
 
 type Dir = 'rtl' | 'ltr'
 type Campaign = Strings['hero']['campaigns'][number]
