@@ -29,6 +29,32 @@ export const R2_PUBLIC_URL: string = (import.meta.env.VITE_R2_PUBLIC_URL ?? '').
 let tokenPromise: Promise<string> | null = null
 
 /**
+ * Provisions `accounts/{uid}` for a freshly-minted anonymous sign-in.
+ *
+ * The real design is a server-side Firebase Auth `user.create` trigger
+ * (chekchak-worker's `/triggers/auth-user-created`) that fires this exactly
+ * once per uid — but that needs Eventarc, which needs the Blaze plan's
+ * network-attachment wiring, not yet built. Every other app in this fleet
+ * works around the gap the same way: the client itself POSTs this route
+ * right after sign-in. The handler is idempotent (never re-stamps an
+ * existing account), so calling it on every fresh anonymous session is safe.
+ * Best-effort: a failure here doesn't block getIdToken from returning a
+ * usable token, it just means a route that checks the account doc (like
+ * placeStorefrontOrder's client-type guard) will 403 until this succeeds.
+ */
+async function provisionAccount(idToken: string): Promise<void> {
+  if (!WORKER_URL) return
+  try {
+    await fetch(`${WORKER_URL}/triggers/auth-user-created`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${idToken}` },
+    })
+  } catch {
+    // Best-effort — see doc comment above.
+  }
+}
+
+/**
  * A Firebase ID token for the Worker's storefront routes. The site has no
  * accounts — an anonymous sign-in is enough to make each catalog read and
  * order write attributable. The token (and its refresh) is cached for the tab.
@@ -36,10 +62,15 @@ let tokenPromise: Promise<string> | null = null
 export async function getIdToken(): Promise<string> {
   if (!tokenPromise) {
     tokenPromise = (async () => {
-      if (!auth.currentUser) {
+      const isNewSignIn = !auth.currentUser
+      if (isNewSignIn) {
         await signInAnonymously(auth)
       }
-      return auth.currentUser!.getIdToken()
+      const token = await auth.currentUser!.getIdToken()
+      if (isNewSignIn) {
+        await provisionAccount(token)
+      }
+      return token
     })().catch(err => {
       tokenPromise = null
       throw err
